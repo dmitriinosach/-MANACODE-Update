@@ -1,0 +1,104 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        env:
+          TMP: ${{ runner.temp }}
+          TEMP: ${{ runner.temp }}
+        run: go test -count=1 ./...
+
+      - name: Build
+        shell: pwsh
+        run: go build -trimpath "-ldflags=-H=windowsgui -X main.zipPass=raids-circle" -o dist/ManacodeUpdate.exe .
+
+      - name: Check version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart("v")
+          $text = [Text.Encoding]::GetEncoding(28591).GetString([IO.File]::ReadAllBytes("dist/ManacodeUpdate.exe"))
+          if (-not $text.Contains("MANACODE-UPDATER-VERSION=$v;")) { throw "exe version is not $($v), bump updaterVersion in place.go" }
+
+      - name: Upload unsigned
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: ManacodeUpdate
+          path: dist/ManacodeUpdate.exe
+
+      - name: Sign
+        if: env.SIGNPATH_API_TOKEN != ''
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-id: ${{ steps.upload.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $exe = "dist/ManacodeUpdate.exe"
+          $signed = "unsigned"
+          if (Test-Path "signed/ManacodeUpdate.exe") { $exe = "signed/ManacodeUpdate.exe"; $signed = "signed by SignPath Foundation" }
+          $sha = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
+          $v = "${{ github.ref_name }}".TrimStart("v")
+          @(
+            "ManacodeUpdate устанавливает и обновляет аддоны Manacode и ваши проекты аддонов с публичными релизами GitHub.",
+            "",
+            "Что нового в 1.6.0:",
+            "- Свои GitHub-проекты: разбор ссылок, выбор архива и автоматическое обновление. ZIP, 7z, RAR и TAR, включая .tar.gz, .tar.bz2 и .tar.xz.",
+            "- Русский, английский и испанский интерфейс; выбор языка при первом запуске и смена через RU / EN / ES.",
+            "- Интервал проверки аддонов: 1, 2, 4, 6, 12 или 24 часа. Данные PlayerRaidsInfo — каждые 15 минут при включённом автообновлении.",
+            "- Удаление аддона с подтверждением; настройки в WTF сохраняются.",
+            "- Talents в каталоге, доработки обмена Market Based Auction и кнопка включения 4 ГБ для WoW с резервной копией Wow.exe.",
+            "",
+            "Скачайте ``ManacodeUpdate.exe`` и замените старую копию. Программа умеет обновлять себя кнопкой внизу окна и автоматически при включённом автообновлении. Для установки и удаления аддонов полностью закройте игру.",
+            "",
+            "Known limits: custom projects need public stable GitHub releases containing a WoW addon. Existing manually installed folders cannot be adopted automatically; changes to the set of addon folders require reinstallation. Some auction exchange status messages remain in Russian.",
+            "",
+            "What's new in 1.6.0:",
+            "- Add custom GitHub addon projects, select release archives and keep them updated automatically. Supports ZIP, 7z, RAR and TAR, including compressed TAR archives.",
+            "- Russian, English and Spanish UI with a first-run language picker and RU / EN / ES switching.",
+            "- Addon update checks every 1, 2, 4, 6, 12 or 24 hours. PlayerRaidsInfo data checks remain every 15 minutes when automatic updates are enabled.",
+            "- Uninstall addons with confirmation while preserving settings in WTF.",
+            "- Talents catalog entry, Market Based Auction exchange improvements and an optional 4 GB memory patch with a Wow.exe backup.",
+            "",
+            "Download ``ManacodeUpdate.exe`` and replace the previous copy. The app also supports self-updates. Fully close the game before installing or removing addons.",
+            "",
+            "Built from source by GitHub Actions, $signed.",
+            "",
+            "sha256: ``$sha``"
+          ) | Set-Content -Encoding utf8 dist/notes.md
+          New-Item -ItemType Directory -Force dist/release | Out-Null
+          Copy-Item $exe dist/release/ManacodeUpdate.exe -Force
+          gh release create "${{ github.ref_name }}" dist/release/ManacodeUpdate.exe --title "ManacodeUpdate $v" --notes-file dist/notes.md --prerelease

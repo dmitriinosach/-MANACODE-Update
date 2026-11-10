@@ -1,0 +1,25 @@
+{
+  "exchange": 1,
+  "note": "Что читатель обмена обязан достать из AuctionScanDB.lua. Порядок сканов — как в файле. scope \"\" — поля нет: полный рынок. Прочие поля сканов и разделы базы (sharedHistory, ledger, log...) читатель пропускает.",
+  "scans": [
+    {"id": "WoW Circle 3.3.5a x1|Alliance|1792900000|1", "t": 1792900000, "realm": "WoW Circle 3.3.5a x1", "faction": "Alliance", "mode": "all", "scope": "", "total": 4, "secs": 41, "expect": 4, "miss": 0, "lots": 4},
+    {"id": "WoW Circle 3.3.5a x1|Horde|1792900600|2", "t": 1792900600, "realm": "WoW Circle 3.3.5a x1", "faction": "Horde", "mode": "pages", "scope": "", "total": 2, "secs": 380, "expect": 3, "miss": 1, "lots": 2},
+    {"id": "WoW Circle 3.3.5a x1|Alliance|1792901200|3", "t": 1792901200, "realm": "WoW Circle 3.3.5a x1", "faction": "Alliance", "mode": "pages", "scope": "item", "itemID": 34054, "query": "Абсолютная пыль", "total": 2, "secs": 2, "expect": 2, "miss": 0, "lots": 2},
+    {"id": "WoW Circle 3.3.5a x1|Alliance|1792901800|4", "t": 1792901800, "realm": "WoW Circle 3.3.5a x1", "faction": "Alliance", "mode": "pages", "scope": "query", "query": "кольцо", "total": 1, "secs": 1, "expect": 1, "miss": 0, "lots": 1},
+    {"id": "WoW Circle 3.3.5a x1|Alliance|1792902400|5", "t": 1792902400, "realm": "WoW Circle 3.3.5a x1", "faction": "Alliance", "mode": "pages", "scope": "family", "family": 36932, "query": "Темный нефрит", "total": 2, "secs": 3, "expect": 2, "miss": 0, "lots": 2},
+    {"id": "WoW Circle 3.3.5a x1|Alliance|1792903000|6", "t": 1792903000, "realm": "WoW Circle 3.3.5a x1", "faction": "Alliance", "mode": "pages", "scope": "gems", "query": "", "total": 1, "secs": 9, "expect": 1, "miss": 0, "lots": 1},
+    {"id": "WoW Circle 3.3.5a x1|Alliance|1792903600|7", "t": 1792903600, "realm": "WoW Circle 3.3.5a x1", "faction": "Alliance", "mode": "pages", "scope": "disenchant", "query": "", "truncated": true, "total": 1, "secs": 13, "expect": 1152, "miss": 0, "lots": 1}
+  ],
+  "lots": [
+    {"scan": 1, "index": 1, "item": 36919, "suffix": 0, "count": 1, "minBid": 950000, "buyout": 1000000, "bid": 0, "timeLeft": 4, "owner": "Вивалякуба"},
+    {"scan": 1, "index": 2, "item": 36919, "suffix": 0, "count": 1, "minBid": 950000, "buyout": 1000000, "bid": 0, "timeLeft": 4, "owner": "Вивалякуба"},
+    {"scan": 1, "index": 3, "item": 44000, "suffix": -39, "count": 1, "minBid": 120000, "buyout": 150000, "bid": 125000, "timeLeft": 2, "owner": "Страхнул"},
+    {"scan": 1, "index": 4, "item": 34054, "suffix": 0, "count": 20, "minBid": 20000, "buyout": 0, "bid": 0, "timeLeft": 1, "owner": ""}
+  ],
+  "items": [
+    {"id": 36919, "name": "Багровый рубин", "quality": 3},
+    {"id": 34054, "name": "Абсолютная пыль", "quality": 1},
+    {"id": 43102, "name": "Замёрзшая сфера", "quality": 2},
+    {"id": 36932, "name": "Темный нефрит", "quality": 2}
+  ]
+}
